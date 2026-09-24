@@ -1,0 +1,57 @@
+{"text": "Remember that Marcus from Acme prefers email over Slack.", "intent": "memory", "tool": "memory_save"}
+{"text": "Note to self, the Q3 budget for the Acme deal is forty thousand dollars.", "intent": "memory", "tool": "memory_save"}
+{"text": "Jenna's daughter is called Lily and she just started kindergarten.", "intent": "question", "tool": "answer_question"}
+{"text": "Idea for the launch: we should give beta users a lifetime discount.", "intent": "question", "tool": "answer_question"}
+{"text": "Save this, the office wifi password is on the fridge.", "intent": "memory", "tool": "memory_save"}
+{"text": "I just parked on level three, spot B twelve.", "intent": "question", "tool": "answer_question"}
+{"text": "What does Marcus prefer, email or Slack?", "intent": "question", "tool": "answer_question", "args": {"use_memory": true}}
+{"text": "What's the budget I mentioned for the Acme deal?", "intent": "question", "tool": "answer_question", "args": {"use_memory": true}}
+{"text": "Where did I park?", "intent": "question", "tool": "answer_question", "args": {"use_memory": true}}
+{"text": "What's the weather in Tokyo tomorrow?", "intent": "question", "tool": "answer_question", "args": {"use_web": true}}
+{"text": "Who won the Champions League last season?", "intent": "question", "tool": "answer_question", "args": {"use_web": true}}
+{"text": "Find the pitch deck I was working on last week.", "intent": "question", "tool": "answer_question", "args": {"use_files": true}}
+{"text": "Where's the PDF of my lease agreement?", "intent": "question", "tool": "answer_question", "args": {"use_files": true}}
+{"text": "What did we decide in the meeting with Acme?", "intent": "question", "tool": "answer_question", "args": {"use_memory": true}}
+{"text": "Open Spotify.", "intent": "action", "tool": "open_app", "args": {"name": "Spotify"}}
+{"text": "Can you launch Visual Studio Code for me", "intent": "action", "tool": "open_app"}
+{"text": "Pull up my calendar app.", "intent": "action", "tool": "open_app"}
+{"text": "Add this to the input: say something.", "intent": "action", "tool": "paste_text", "args": {"text": "say something"}}
+{"text": "Type into the box, sounds good, see you at five.", "intent": "action", "tool": "paste_text"}
+{"text": "Paste in, thanks for the update, I'll review it tonight.", "intent": "action", "tool": "paste_text"}
+{"text": "Click the send button.", "intent": "action", "tool": "click_element", "args": {"label": "send"}}
+{"text": "Press the reply all button.", "intent": "action", "tool": "click_element"}
+{"text": "Send a recap of the meeting to Marcus.", "intent": "action", "tool": "draft_message", "args": {"include_last_meeting": true}}
+{"text": "Draft an email to Jenna saying the proposal is ready for review.", "intent": "action", "tool": "draft_message"}
+{"text": "Reach out to Marcus and ask if he's free Friday.", "intent": "action", "tool": "draft_message"}
+{"text": "Remind me to send the proposal to Jenna on Thursday at 3pm.", "intent": "reminder", "tool": "create_reminder"}
+{"text": "Remind me in 20 minutes to take the laundry out.", "intent": "reminder", "tool": "create_reminder"}
+{"text": "I need to call the recruiter back tomorrow morning.", "intent": "reminder", "tool": "create_reminder"}
+{"text": "Don't let me forget to renew my passport next week.", "intent": "reminder", "tool": "create_reminder"}
+{"text": "I promised Marcus I'd send the contract by Friday.", "intent": "reminder", "tool": "create_reminder"}
+{"text": "Start transcribing this meeting.", "intent": "meeting", "tool": "start_meeting"}
+{"text": "Record this call with the Acme team.", "intent": "meeting", "tool": "start_meeting"}
+{"text": "Stop recording the meeting.", "intent": "meeting", "tool": "stop_meeting"}
+{"text": "Okay the call's over, stop transcribing.", "intent": "meeting", "tool": "stop_meeting"}
+{"text": "Hey team, quick update, the launch moved to Friday because of the security review.", "focused": true, "intent": "question", "tool": "answer_question"}
+{"text": "Thanks so much for the intro, I'd love to find time next week to chat.", "focused": true, "intent": "question", "tool": "answer_question"}
+{"text": "Sounds good to me, let's ship it.", "focused": true, "intent": "question", "tool": "answer_question"}
+{"text": "Dear Marcus, attached is the revised proposal with the updated pricing.", "focused": true, "intent": "question", "tool": "answer_question"}
+{"text": "Remember that the Acme renewal is due in March, and remind me on Friday to prep the renewal deck.", "intent": "memory", "tool": "memory_save", "tool2": "create_reminder"}
+{"text": "Open Slack and paste in, I'm running five minutes late.", "intent": "action", "tool": "open_app", "tool2": "paste_text"}
+{"text": "What time is my call with Jenna?", "focused": true, "intent": "question", "tool": "answer_question"}
+{"text": "Remember that I prefer window seats.", "focused": true, "intent": "memory", "tool": "memory_save"}
+{"text": "Hey Flow, how are you?", "intent": "question", "tool": "answer_question"}
+{"text": "Hi there.", "intent": "question", "tool": "answer_question"}
+{"text": "Thanks, that's perfect.", "intent": "question", "tool": "answer_question"}
+{"text": "Good morning!", "intent": "question", "tool": "answer_question"}
+{"text": "Move my passport reminder to Monday at noon.", "intent": "reminder", "tool": "update_reminder"}
+{"text": "Delete the reminder about calling the recruiter.", "intent": "reminder", "tool": "delete_reminder"}
+{"text": "Change the proposal reminder to 5pm.", "intent": "reminder", "tool": "update_reminder"}
+{"text": "Remember that Priya's birthday is June 4th.", "intent": "memory", "tool": "memory_save"}
+{"text": "Help me write an email here to tell Kevin that this is my submission for the case study.", "focused": true, "intent": "action", "tool": "write_text"}
+{"text": "Write a reply saying I'll be there at five.", "focused": true, "intent": "action", "tool": "write_text"}
+{"text": "Insert, running ten minutes late, sorry!", "focused": true, "intent": "action", "tool": "paste_text"}
+{"text": "Type in the box: happy birthday Maya!", "focused": true, "intent": "action", "tool": "paste_text"}
+{"text": "Update my memory about Marcus, his email is now marcus@acme.io", "intent": "memory", "tool": "update_memory"}
+{"text": "Forget that I parked on level three.", "intent": "memory", "tool": "delete_memory"}
+{"text": "What do you remember about Marcus?", "intent": "question", "tool": "answer_question"}

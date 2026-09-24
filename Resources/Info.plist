@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key><string>Flow</string>
+    <key>CFBundleDisplayName</key><string>Flow</string>
+    <key>CFBundleIdentifier</key><string>ai.liquid.flow</string>
+    <key>CFBundleExecutable</key><string>Flow</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleShortVersionString</key><string>0.1.0</string>
+    <key>CFBundleVersion</key><string>1</string>
+    <key>LSMinimumSystemVersion</key><string>14.0</string>
+    <key>LSUIElement</key><true/>
+    <key>NSAppSleepDisabled</key><true/>
+    <key>NSSupportsAutomaticTermination</key><false/>
+    <key>NSSupportsSuddenTermination</key><false/>
+    <key>NSHighResolutionCapable</key><true/>
+    <key>NSMicrophoneUsageDescription</key><string>Flow listens while you hold your hotkey and when you ask it to transcribe a meeting.</string>
+    <key>NSCalendarsFullAccessUsageDescription</key><string>Flow shows your meetings on its calendar and offers to transcribe them when they start.</string>
+    <key>NSLocationUsageDescription</key><string>Flow uses your approximate location so answers about weather, places and "near me" fit where you are.</string>
+    <key>NSLocationWhenInUseUsageDescription</key><string>Flow uses your approximate location so answers about weather, places and "near me" fit where you are.</string>
+    <key>NSAppleEventsUsageDescription</key><string>Flow drafts messages and controls apps when you ask it to.</string>
+</dict>
+</plist>

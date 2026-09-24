@@ -1,0 +1,28 @@
+{"text": "My dentist appointment got moved to October 3rd.", "intent": "question", "tool": "answer_question"}
+{"text": "Sarah from legal said the NDA template lives in the shared drive.", "intent": "question", "tool": "answer_question"}
+{"text": "The gate code for the warehouse is 4471.", "intent": "question", "tool": "answer_question"}
+{"text": "Thought: we could bundle onboarding with the annual plan.", "intent": "question", "tool": "answer_question"}
+{"text": "What's the gate code for the warehouse?", "intent": "question", "tool": "answer_question"}
+{"text": "When is my dentist appointment?", "intent": "question", "tool": "answer_question"}
+{"text": "Who is the CEO of Nvidia?", "intent": "question", "tool": "answer_question", "args": {"use_web": true}}
+{"text": "How tall is the Eiffel Tower?", "intent": "question", "tool": "answer_question"}
+{"text": "Can you find the spreadsheet with the Q2 forecast?", "intent": "question", "tool": "answer_question", "args": {"use_files": true}}
+{"text": "Did Priya say anything about the renewal?", "intent": "question", "tool": "answer_question"}
+{"text": "Open Safari.", "intent": "action", "tool": "open_app", "args": {"name": "Safari"}}
+{"text": "Bring up Notion please.", "intent": "action", "tool": "open_app"}
+{"text": "Write in the box: can we push this to tomorrow?", "focused": true, "intent": "action", "tool": "paste_text"}
+{"text": "Hit the save button.", "intent": "action", "tool": "click_element"}
+{"text": "Email Sarah and ask for the NDA template.", "intent": "action", "tool": "draft_message"}
+{"text": "Message Tom that I'm running late.", "intent": "action", "tool": "draft_message"}
+{"text": "Draft a follow-up to the Acme team about pricing.", "intent": "action", "tool": "draft_message"}
+{"text": "Remind me at 6pm to call mom.", "intent": "reminder", "tool": "create_reminder"}
+{"text": "Remind me tomorrow to submit the expense report.", "intent": "reminder", "tool": "create_reminder"}
+{"text": "I have to finish the board deck by Wednesday.", "intent": "reminder", "tool": "create_reminder"}
+{"text": "Make sure I follow up with Sarah on Monday.", "intent": "reminder", "tool": "create_reminder"}
+{"text": "Begin transcribing, the call is starting.", "intent": "meeting", "tool": "start_meeting"}
+{"text": "End the meeting recording.", "intent": "meeting", "tool": "stop_meeting"}
+{"text": "Hi Tom, the contract looks good, I'll sign it this afternoon.", "focused": true, "intent": "question", "tool": "answer_question"}
+{"text": "Can we move our sync to Thursday? Something came up.", "focused": true, "intent": "question", "tool": "answer_question"}
+{"text": "Great meeting today, thanks everyone for the thoughtful questions.", "focused": true, "intent": "question", "tool": "answer_question"}
+{"text": "Remember that Tom's birthday is May 12th and remind me the day before to buy a gift.", "intent": "memory", "tool": "memory_save", "tool2": "create_reminder"}
+{"text": "What's on my plate for Friday?", "intent": "question", "tool": "answer_question"}
