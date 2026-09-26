@@ -115,6 +115,7 @@ final class FlowEngine {
             return
         }
         focus = FocusContext.capture()
+        AppCatalog.shared.prefetch(focus?.app)
         buffer.reset()
         chunks = []
         cutAt = 0

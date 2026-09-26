@@ -14,7 +14,8 @@ First decide the kind of utterance, then the tool calls:
    To change or cancel an EXISTING reminder: update_reminder(which, new_title, new_when) or delete_reminder(which). which = a few words that identify the reminder. Use "" for anything that stays the same.
 3. meeting_control - start or stop transcribing a meeting or call. Tools start_meeting, stop_meeting.
 4. command_for_the_computer - a command for the computer to do now:
-   open_app(name) to open or launch an app or website.
+   open_app(name) to open or launch an app or website, with nothing else to do in it.
+   app_action(app, request) to do something INSIDE an app: play, pause or skip music, change the volume, create or open a note in Notes, open a page or search in Chrome or Notion, ask Claude something, check or reply to email in Mail, run a menu command or a Shortcut. app = the app they named, or "" if they didn't name one. request = what to do, in their words.
    paste_text(text) ONLY when they explicitly ask to insert words: "insert…", "paste…", "type…", "add this to the input…". text is only the exact words to insert. Never paste what the user says just because a text field is focused.
    write_text(instructions) when they ask Flow to write, compose or reply with text for them in the field they're in ("write an email here…", "reply saying…", "help me write…"). Flow composes it and types it in.
    click_element(label) when they say "click" or "press" a button. label is the button name.
@@ -53,6 +54,16 @@ Use up to 3 calls when the user asks for several things, in the order spoken. Ke
                 output: #"{"kind":"asking_a_question","calls":[{"tool":"answer_question","args":{"question":"What is the capital of Australia?","use_memory":false,"use_files":false,"use_web":true}}]}"#),
         Example(said: "Launch Figma", focused: false, app: "Finder",
                 output: #"{"kind":"command_for_the_computer","calls":[{"tool":"open_app","args":{"name":"Figma"}}]}"#),
+        Example(said: "Play Get Lucky by Daft Punk on Spotify", focused: false, app: "Finder",
+                output: #"{"kind":"command_for_the_computer","calls":[{"tool":"app_action","args":{"app":"Spotify","request":"Play Get Lucky by Daft Punk"}}]}"#),
+        Example(said: "Skip this song", focused: false, app: "Notion",
+                output: #"{"kind":"command_for_the_computer","calls":[{"tool":"app_action","args":{"app":"","request":"Skip this song"}}]}"#),
+        Example(said: "Create a note in Apple Notes called packing list with passport and charger", focused: false, app: "Finder",
+                output: #"{"kind":"command_for_the_computer","calls":[{"tool":"app_action","args":{"app":"Notes","request":"Create a note called packing list with passport and charger"}}]}"#),
+        Example(said: "Ask Claude to explain how DNS works", focused: false, app: "Finder",
+                output: #"{"kind":"command_for_the_computer","calls":[{"tool":"app_action","args":{"app":"Claude","request":"Explain how DNS works"}}]}"#),
+        Example(said: "Toggle the sidebar", focused: false, app: "Notion",
+                output: #"{"kind":"command_for_the_computer","calls":[{"tool":"app_action","args":{"app":"","request":"Toggle the sidebar"}}]}"#),
         Example(said: "Put this in the text box: running late, start without me", focused: true, app: "Messages",
                 output: #"{"kind":"command_for_the_computer","calls":[{"tool":"paste_text","args":{"text":"Running late, start without me."}}]}"#),
         Example(said: "Help me write a reply here saying I can do Thursday at 2", focused: true, app: "Gmail",

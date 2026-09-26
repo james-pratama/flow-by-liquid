@@ -25,7 +25,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         LocationService.shared.start()
         // Index everything that isn't searchable yet, once the embedding model is up.
         Task.detached(priority: .utility) {
-            if await ModelServers.shared.waitReady(.embed, timeout: 180) { await LocalMemory.shared.backfill(limit: 2000) }
+            if await ModelServers.shared.waitReady(.embed, timeout: 180) {
+                await AppCatalog.shared.refresh()
+                await LocalMemory.shared.backfill(limit: 2000)
+            }
         }
         setupStatusItem()
 

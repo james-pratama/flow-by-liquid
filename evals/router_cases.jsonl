@@ -55,3 +55,13 @@
 {"text": "Update my memory about Marcus, his email is now marcus@acme.io", "intent": "memory", "tool": "update_memory"}
 {"text": "Forget that I parked on level three.", "intent": "memory", "tool": "delete_memory"}
 {"text": "What do you remember about Marcus?", "intent": "question", "tool": "answer_question"}
+{"text": "Play Blinding Lights by The Weeknd on Spotify", "intent": "action", "tool": "app_action", "args": {"app": "spotify"}}
+{"text": "Pause the music", "intent": "action", "tool": "app_action"}
+{"text": "Next song", "intent": "action", "tool": "app_action"}
+{"text": "Turn the volume down on Spotify", "intent": "action", "tool": "app_action"}
+{"text": "Ask Claude to write a haiku about autumn", "intent": "action", "tool": "app_action", "args": {"app": "claude"}}
+{"text": "Open my roadmap page in Notion", "intent": "action", "tool": "app_action", "args": {"app": "notion"}}
+{"text": "Make a new note in Notes called groceries with eggs and milk", "intent": "action", "tool": "app_action", "args": {"app": "notes"}}
+{"text": "Open a new tab in Chrome and go to github", "intent": "action", "tool": "app_action"}
+{"text": "Check my email in Mail", "intent": "action", "tool": "app_action"}
+{"text": "Search Google for flights to Tokyo in Chrome", "intent": "action", "tool": "app_action"}

@@ -74,6 +74,18 @@ enum Embedder {
         return v
     }
 
+    /// Several texts in one request (llama-server batches them).
+    static func embedBatch(_ texts: [String]) async throws -> [[Float]] {
+        let obj = try await LLMClient.embed.post("v1/embeddings", ["input": texts.map { String($0.prefix(2000)) }], timeout: 60)
+        guard let data = obj["data"] as? [[String: Any]], data.count == texts.count else { throw LLMError.badResponse("no embeddings") }
+        return data.sorted { ($0["index"] as? Int ?? 0) < ($1["index"] as? Int ?? 0) }.map { item in
+            var v = (item["embedding"] as? [Double] ?? []).map { Float($0) }
+            let norm = v.reduce(0) { $0 + $1 * $1 }.squareRoot()
+            if norm > 0 { v = v.map { $0 / norm } }
+            return v
+        }
+    }
+
     static func cosine(_ a: [Float], _ b: [Float]) -> Float {
         guard a.count == b.count else { return 0 }
         var s: Float = 0
