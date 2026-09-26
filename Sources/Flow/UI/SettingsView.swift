@@ -79,6 +79,13 @@ struct SettingsView: View {
                 Text("Without a key, Flow uses DuckDuckGo's HTML results.").font(.caption).foregroundStyle(.secondary)
             }
 
+            Section("Spotify") {
+                TextField("Client ID (optional)", text: $settings.spotifyClientId)
+                SecureField("Client secret", text: $settings.spotifyClientSecret)
+                Text("Lets “play <song>” find the exact track. Create a free app at developer.spotify.com and paste its ID and secret. Without them, Flow finds tracks through web search, or opens Spotify's search results.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
             Section("General") {
                 Toggle("Open Flow at login", isOn: $settings.launchAtLogin)
                 Text("Reminders pop up only while Flow is running, so keep this on.").font(.caption).foregroundStyle(.secondary)

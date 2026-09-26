@@ -26,3 +26,8 @@
 {"text": "Great meeting today, thanks everyone for the thoughtful questions.", "focused": true, "intent": "question", "tool": "answer_question"}
 {"text": "Remember that Tom's birthday is May 12th and remind me the day before to buy a gift.", "intent": "memory", "tool": "memory_save", "tool2": "create_reminder"}
 {"text": "What's on my plate for Friday?", "intent": "question", "tool": "answer_question"}
+{"text": "Put on some lo-fi beats on Spotify", "intent": "action", "tool": "app_action"}
+{"text": "Skip this track", "intent": "action", "tool": "app_action"}
+{"text": "Tell Claude to summarize the history of Rome", "intent": "action", "tool": "app_action", "args": {"app": "claude"}}
+{"text": "Close this tab in Chrome", "intent": "action", "tool": "app_action"}
+{"text": "Reply to this email in Mail saying I'll be there at noon", "intent": "action", "tool": "app_action"}

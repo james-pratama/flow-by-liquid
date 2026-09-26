@@ -1,0 +1,43 @@
+{"text": "Play Get Lucky by Daft Punk", "app": "Spotify", "action": "spotify.play_search", "args": {"query": "get lucky"}}
+{"text": "Put on some jazz", "app": "Spotify", "action": "spotify.play_search", "args": {"query": "jazz"}}
+{"text": "Play the album Random Access Memories", "app": "Spotify", "action": "spotify.play_search", "args": {"query": "random access memories"}}
+{"text": "Skip this song", "app": "", "action": ["spotify.next", "media.next"]}
+{"text": "Next track on Spotify", "app": "Spotify", "action": "spotify.next"}
+{"text": "Go back to the last song", "app": "Spotify", "action": "spotify.previous"}
+{"text": "Pause the music", "app": "", "action": ["spotify.pause", "media.play_pause"]}
+{"text": "Resume Spotify", "app": "Spotify", "action": "spotify.resume"}
+{"text": "Turn the volume down", "app": "Spotify", "action": "spotify.volume", "args": {"level": "down"}}
+{"text": "Set the volume to 30", "app": "Spotify", "action": "spotify.volume", "args": {"level": "30"}}
+{"text": "Turn on shuffle", "app": "Spotify", "action": "spotify.shuffle", "args": {"state": "on"}}
+{"text": "What song is this?", "app": "Spotify", "action": "spotify.now_playing"}
+{"text": "Open my Q3 roadmap page", "app": "Notion", "action": "notion.open_page", "args": {"page": "q3 roadmap"}}
+{"text": "Make a new page called Meeting notes", "app": "Notion", "action": "notion.new_page", "args": {"title": "meeting notes"}}
+{"text": "Search Notion for hiring plan", "app": "Notion", "action": ["notion.search", "notion.open_page"], "args": {}}
+{"text": "Hide the sidebar", "app": "Notion", "action": "notion.sidebar"}
+{"text": "Copy the link to this page", "app": "Notion", "action": "notion.copy_link"}
+{"text": "Go back", "app": "Notion", "action": "notion.back"}
+{"text": "Ask Claude to explain how DNS works", "app": "Claude", "action": "claude.ask", "args": {"message": "dns"}}
+{"text": "Start a new chat", "app": "Claude", "action": "claude.new_chat"}
+{"text": "Have Claude write a haiku about autumn", "app": "Claude", "action": "claude.ask", "args": {"message": "haiku"}}
+{"text": "Check for new mail", "app": "Mail", "action": "mail.check"}
+{"text": "Do I have any unread emails?", "app": "Mail", "action": "mail.unread"}
+{"text": "Reply saying I'll be there at noon", "app": "Mail", "action": "mail.reply", "args": {"instructions": "noon"}}
+{"text": "Find emails from Priya", "app": "Mail", "action": "mail.search", "args": {"query": "priya"}}
+{"text": "Go to github.com", "app": "Google Chrome", "action": "google_chrome.open", "args": {"site": "github"}}
+{"text": "Google flights to Tokyo", "app": "Chrome", "action": "google_chrome.search", "args": {"query": "tokyo"}}
+{"text": "Switch to my Gmail tab", "app": "Chrome", "action": "google_chrome.switch_tab", "args": {"which": "gmail"}}
+{"text": "Close this tab", "app": "Chrome", "action": "google_chrome.close_tab"}
+{"text": "Open a new tab", "app": "Chrome", "action": "google_chrome.new_tab"}
+{"text": "Reload the page", "app": "Chrome", "action": "google_chrome.reload"}
+{"text": "Open an incognito window", "app": "Chrome", "action": "google_chrome.incognito"}
+{"text": "Copy this page's URL", "app": "Chrome", "action": "google_chrome.copy_link"}
+{"text": "Create a note called packing list with passport and charger", "app": "Notes", "action": "notes.create", "args": {"title": "packing list", "body": "passport"}}
+{"text": "Add bread to my groceries note", "app": "Notes", "action": "notes.append", "args": {"note": "groceries", "text": "bread"}}
+{"text": "Open my note about the offsite", "app": "Notes", "action": "notes.open", "args": {"note": "offsite"}}
+{"text": "Order me a pizza", "app": "Spotify", "action": "none"}
+{"text": "Book a flight to Paris", "app": "Notes", "action": "none"}
+{"text": "Play Only Time", "app": "Spotify", "action": "spotify.play_search", "args": {"query": "only time"}}
+{"text": "Start playing only time", "app": "", "action": "spotify.play_search", "args": {"query": "only time"}}
+{"text": "Play my Work playlist", "app": "Spotify", "action": ["spotify.play_search", "spotify.play_library"], "args": {}}
+{"text": "Play my liked songs", "app": "", "action": ["spotify.play_search", "spotify.play_library"], "args": {}}
+{"text": "Play it again", "app": "Spotify", "action": ["spotify.previous", "spotify.resume"]}

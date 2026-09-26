@@ -9,9 +9,14 @@ import Foundation
 ///   Flow --date "thursday at 3pm"               resolve a spoken time
 ///   Flow --ask "where did I park?"              run the question agent
 ///   Flow --meeting transcript.txt [title]       summarize a transcript ("Me: …" / "Them: …" lines)
+///   Flow --apps [filter]                        list the app actions Flow knows
+///   Flow --app "skip this song" [Spotify]       pick an app action (set FLOW_DRY_RUN to only print it)
+///   Flow --app-eval evals/app_cases.jsonl       app-action accuracy + latency
+///   open -W /Applications/Flow.app --args --spotify-probe "only time" [--press]
+///                                               what Flow sees in Spotify (→ logs/spotify-probe.txt; needs Flow.app's Accessibility)
 /// Set FLOW_HOME to use a separate data folder.
 enum CLI {
-    static let commands = ["--clean-text", "--overlay-preview", "--make-icon", "--logo-png", "--meeting-sim", "--handle", "--route", "--eval", "--asr", "--date", "--ask", "--meeting", "--remember"]
+    static let commands = ["--clean-text", "--overlay-preview", "--make-icon", "--logo-png", "--meeting-sim", "--handle", "--route", "--eval", "--asr", "--date", "--ask", "--meeting", "--remember", "--apps", "--app", "--app-eval", "--spotify-probe"]
 
     static func handles(_ args: [String]) -> Bool { args.dropFirst().first.map(commands.contains) ?? false }
 
@@ -109,6 +114,7 @@ enum CLI {
         case "--handle":
             guard await need([.router, .embed]) else { return 1 }
             await LocalMemory.shared.backfill(limit: 500)
+            await AppCatalog.shared.refresh()
             let focus = a.contains("--focused") ? FocusContext(app: nil, appName: "Google Chrome", bundleId: "", element: nil, role: "AXTextArea",
                                                                isTextInput: true, selectedText: "", windowTitle: "Gmail") : nil
             await FlowEngine.shared.handle(arg, focus: focus)
@@ -134,6 +140,95 @@ enum CLI {
         case "--eval":
             guard await need([.router]) else { return 1 }
             return await Eval.run(path: arg)
+
+        case "--apps":
+            guard await need([.embed]) else { return 1 }
+            await AppCatalog.shared.refresh()
+            let actions = AppCatalog.shared.all.filter { arg.isEmpty || $0.searchText.lowercased().contains(arg.lowercased()) }
+            for a in actions { print("[\(a.source.rawValue)] \(a.app): \(a.title)\(a.args.isEmpty ? "" : " (" + a.args.map(\.name).joined(separator: ", ") + ")")\(a.risk == .outward ? " ⚠︎ asks first" : "")") }
+            let counts = Dictionary(grouping: AppCatalog.shared.all, by: \.source).mapValues(\.count)
+            print("\n\(AppCatalog.shared.all.count) actions: " + counts.map { "\($0.value) \($0.key.rawValue)" }.sorted().joined(separator: ", ")
+                  + " (+ menu items of whichever app is in front)")
+            return 0
+
+        case "--app":
+            guard await need([.router, .embed]) else { return 1 }
+            await AppCatalog.shared.refresh()
+            let t0 = Date()
+            let (target, candidates) = await AppCatalog.shared.candidates(for: arg, app: a.count > 2 ? a[2] : "", frontmost: nil)
+            let t1 = Date()
+            print("app: \(target?.name ?? "(none named)")  · search \(Int(t1.timeIntervalSince(t0) * 1000)) ms")
+            for (i, c) in candidates.enumerated() { print("  \(i + 1). \(c.id)") }
+            guard let (action, args) = await AppActionTool.pick(arg, target: target, candidates: candidates, frontmost: nil) else { print("→ none"); return 0 }
+            print("→ \(action.id) \(JSON.string(args.raw))  · pick \(Int(Date().timeIntervalSince(t1) * 1000)) ms")
+            if DryRun.active { return 0 }
+            let ctx = ToolContext(transcript: arg, focus: nil, now: Date(), sessionId: UUID().uuidString, intent: "action")
+            do { let r = try await action.perform(args, ctx); print("✓ \(r.message) \(r.detail)") } catch { print("✗ \(error.localizedDescription)") }
+            return 0
+
+        case "--spotify-probe":
+            // Lists the play buttons and library playlists Flow can see in Spotify, without pressing any.
+            // Written to logs/spotify-probe.txt, since this is run through `open` (for Flow.app's Accessibility grant).
+            var lines = ["accessibility: \(AXIsProcessTrusted())"]
+            defer { try? lines.joined(separator: "\n").write(to: Paths.logs.appendingPathComponent("spotify-probe.txt"), atomically: true, encoding: .utf8) }
+            if a.contains("--press") {
+                // The same path a spoken request takes: catalog search, model pick, then the action.
+                let (target, candidates) = await AppCatalog.shared.candidates(for: arg, app: "Spotify", frontmost: nil)
+                guard let (action, args) = await AppActionTool.pick(arg, target: target, candidates: candidates, frontmost: nil) else {
+                    lines.append("picked: none"); return 1
+                }
+                lines.append("picked: \(action.id) \(JSON.string(args.raw))")
+                let ctx = ToolContext(transcript: arg, focus: nil, now: Date(), sessionId: "probe", intent: "action")
+                let pressed: String
+                do { pressed = try await action.perform(args, ctx).message } catch { pressed = "error: \(error.localizedDescription)" }
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                let playing = (try? await Script.tell(SpotifyPlayer.app, "return (name of current track) & \" — \" & (artist of current track)")) ?? "?"
+                lines += ["pressed: \(pressed)", "now playing: \(playing)"] + SpotifyUI.lastResults
+                return 0
+            }
+            if !arg.isEmpty, let url = URL(string: "spotify:search:\(arg.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? arg)") {
+                NSWorkspace.shared.open(url)
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+            }
+            _ = try? await SpotifyPlayer.app.activate()
+            let found: [String]? = await SpotifyUI.withPage { root in
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+                var wins: CFTypeRef?
+                AXUIElementCopyAttributeValue(root, kAXWindowsAttribute as CFString, &wins)
+                let windows = (wins as? [AXUIElement]) ?? []
+                var counted = 0, q = AX.children(root)
+                while !q.isEmpty && counted < 20000 { let n = q.removeFirst(); counted += 1; q += AX.children(n) }
+                let winInfo = windows.map { w -> String in
+                    var mini: CFTypeRef?
+                    AXUIElementCopyAttributeValue(w, kAXMinimizedAttribute as CFString, &mini)
+                    return "\(AX.string(w, kAXTitleAttribute) ?? "?") minimized=\((mini as? Bool) ?? false)"
+                }
+                var header = ["windows: \(winInfo)", "nodes: \(counted)"]
+                var fq = AX.children(root), fseen = 0
+                while !fq.isEmpty && fseen < 20000 {
+                    let n = fq.removeFirst(); fseen += 1
+                    let role = AX.string(n, kAXRoleAttribute) ?? ""
+                    if ["AXTextField", "AXComboBox", "AXSearchField", "AXTextArea"].contains(role) {
+                        header.append("field: \(role) subrole=\(AX.string(n, kAXSubroleAttribute) ?? "") desc=\(AX.string(n, kAXDescriptionAttribute) ?? "") placeholder=\(AX.string(n, kAXPlaceholderValueAttribute) ?? "") value=\(AX.string(n, kAXValueAttribute) ?? "")")
+                    }
+                    fq += AX.children(n)
+                }
+                let library = SpotifyUI.first(in: root) { AX.string($0, kAXDescriptionAttribute) == "Your Library" }
+                let main = SpotifyUI.first(in: root) { AX.string($0, kAXSubroleAttribute) == "AXLandmarkMain" }
+                return header + ["main area: \(main.flatMap { AX.string($0, kAXDescriptionAttribute) } ?? "not found")"]
+                    + (library.map { SpotifyUI.libraryRows(in: $0).map { "library: \($0.label)" } } ?? ["library: not found"])
+                    + (main.map { SpotifyUI.playButtons(in: $0).prefix(8).map { b in
+                        "result: \(b.label)  ⟨\(SpotifyUI.nearbyText(b.element).prefix(6).joined(separator: " · ").prefix(120))⟩"
+                    } } ?? [])
+            }
+            lines += found ?? ["Spotify isn't running"]
+            let playing = (try? await Script.tell(SpotifyPlayer.app, "return (player state as text) & \": \" & (name of current track) & \" — \" & (artist of current track)")) ?? "?"
+            lines.insert("now playing: \(playing)", at: 1)
+            return 0
+
+        case "--app-eval":
+            guard await need([.router, .embed]) else { return 1 }
+            return await AppEval.run(path: arg)
 
         case "--asr":
             guard await need([.asr]) else { return 1 }
@@ -226,4 +321,47 @@ enum Eval {
         for (k, v) in byIntent.sorted(by: { $0.key < $1.key }) { print("  \(k.padding(toLength: 10, withPad: " ", startingAt: 0)) \(v.0)/\(v.1)") }
         return 0
     }
+}
+
+/// Step two of app control: does "skip this song" (+ the app the router named) pick spotify.next?
+enum AppEval {
+    static func run(path: String) async -> Int32 {
+        guard let text = try? String(contentsOfFile: path, encoding: .utf8) else { print("can't read \(path)"); return 1 }
+        await AppCatalog.shared.refresh()
+        var ok = 0, total = 0, inTop = 0
+        var latencies: [Int] = []
+        for line in text.split(separator: "\n") {
+            guard let c = JSON.parse(String(line)), let said = c["text"] as? String, let want = c["action"] as? [String] ?? (c["action"] as? String).map({ [$0] }) else { continue }
+            total += 1
+            let t0 = Date()
+            let (target, candidates) = await AppCatalog.shared.candidates(for: said, app: c["app"] as? String ?? "", frontmost: nil)
+            let pick = await AppActionTool.pick(said, target: target, candidates: candidates, frontmost: nil)
+            latencies.append(Int(Date().timeIntervalSince(t0) * 1000))
+            if candidates.contains(where: { want.contains($0.id) }) { inTop += 1 }
+            var good = pick.map { want.contains($0.0.id) } ?? want.contains("none")
+            for (k, v) in c["args"] as? [String: String] ?? [:] {
+                good = good && (pick?.1.string(k).lowercased().contains(v.lowercased()) ?? false)
+            }
+            if good { ok += 1 } else {
+                print("✗ \(said)\n    → \(pick.map { "\($0.0.id) \(JSON.string($0.1.raw))" } ?? "none")   want \(want.joined(separator: " | "))"
+                      + (candidates.contains { want.contains($0.id) } ? "" : "  (not in candidates)"))
+            }
+        }
+        latencies.sort()
+        let p50 = latencies.isEmpty ? 0 : latencies[latencies.count / 2]
+        let p95 = latencies.isEmpty ? 0 : latencies[min(latencies.count - 1, Int(Double(latencies.count) * 0.95))]
+        print("\nApp actions: \(ok)/\(total) = \(total > 0 ? ok * 100 / total : 0)%   right action in candidates: \(inTop)/\(total)   p50 \(p50) ms   p95 \(p95) ms")
+        return 0
+    }
+}
+
+/// Visible text inside an element (for probes).
+private func texts(_ el: AXUIElement, limit: Int = 200) -> [String] {
+    var out: [String] = [], queue = [el], seen = 0
+    while !queue.isEmpty && seen < limit {
+        let n = queue.removeFirst(); seen += 1
+        if AX.string(n, kAXRoleAttribute) == "AXStaticText", let v = AX.string(n, kAXValueAttribute), !v.trimmingCharacters(in: .whitespaces).isEmpty { out.append(v) }
+        queue += AX.children(n)
+    }
+    return out
 }

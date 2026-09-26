@@ -84,7 +84,7 @@ extension FlowTool {
 enum ToolRegistry {
     static let all: [FlowTool] = [
         MemorySaveTool(), UpdateMemoryTool(), DeleteMemoryTool(), AnswerQuestionTool(), CreateReminderTool(), UpdateReminderTool(), DeleteReminderTool(),
-        OpenAppTool(), PasteTextTool(), WriteTextTool(),
+        OpenAppTool(), AppActionTool(), PasteTextTool(), WriteTextTool(),
         ClickElementTool(), DraftMessageTool(), StartMeetingTool(), StopMeetingTool(),
     ]
     static func tool(_ name: String) -> FlowTool? { all.first { $0.name == name } }

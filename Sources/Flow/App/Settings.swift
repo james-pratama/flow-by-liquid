@@ -25,6 +25,9 @@ final class Settings: ObservableObject {
     /// How Flow addresses you and signs emails. Empty = the macOS account's first name.
     @Published var userName: String { didSet { d.set(userName, forKey: "userName") } }
     @Published var braveAPIKey: String { didSet { d.set(braveAPIKey, forKey: "braveAPIKey") } }
+    /// A Spotify developer app's credentials, so "play <song>" can find the exact track.
+    @Published var spotifyClientId: String { didSet { d.set(spotifyClientId, forKey: "spotifyClientId") } }
+    @Published var spotifyClientSecret: String { didSet { d.set(spotifyClientSecret, forKey: "spotifyClientSecret") } }
     @Published var promptForMeetings: Bool { didSet { d.set(promptForMeetings, forKey: "promptForMeetings") } }
     @Published var launchAtLogin: Bool {
         didSet {
@@ -48,6 +51,8 @@ final class Settings: ObservableObject {
         answerSeconds = d.object(forKey: "answerSeconds") as? Double ?? 5
         llamaServerPath = d.string(forKey: "llamaServerPath") ?? ""
         braveAPIKey = d.string(forKey: "braveAPIKey") ?? ""
+        spotifyClientId = d.string(forKey: "spotifyClientId") ?? ""
+        spotifyClientSecret = d.string(forKey: "spotifyClientSecret") ?? ""
         userName = d.string(forKey: "userName") ?? ""
         promptForMeetings = d.object(forKey: "promptForMeetings") as? Bool ?? true
         launchAtLogin = d.object(forKey: "launchAtLogin") as? Bool ?? false

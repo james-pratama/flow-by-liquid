@@ -36,6 +36,7 @@ final class Store: ObservableObject {
               id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id TEXT, t_start REAL, t_end REAL, speaker TEXT, text TEXT);
             CREATE INDEX IF NOT EXISTS idx_segments_entry ON meeting_segments(entry_id);
             CREATE TABLE IF NOT EXISTS tool_policy(tool TEXT PRIMARY KEY, mode TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS catalog_vectors(text TEXT PRIMARY KEY, vector BLOB NOT NULL);
             """)
         } catch {
             flowLog("migration failed: \(error)")
@@ -219,6 +220,29 @@ final class Store: ObservableObject {
         }
         embeddingCache = out
         return out
+    }
+
+    /// Embeddings of app actions (see AppCatalog), keyed by the text that was embedded.
+    func catalogVectors(_ texts: [String]) -> [String: [Float]] {
+        var out: [String: [Float]] = [:]
+        for chunk in stride(from: 0, to: texts.count, by: 200).map({ Array(texts[$0..<min($0 + 200, texts.count)]) }) {
+            let marks = Array(repeating: "?", count: chunk.count).joined(separator: ",")
+            let rows = (try? db.query("SELECT text, vector FROM catalog_vectors WHERE text IN (\(marks))", chunk)) ?? []
+            for row in rows {
+                guard let t = row["text"]?.string, let d = row["vector"]?.data else { continue }
+                out[t] = d.withUnsafeBytes { Array($0.bindMemory(to: Float.self)) }
+            }
+        }
+        return out
+    }
+
+    func setCatalogVectors(_ vectors: [String: [Float]]) {
+        try? db.transaction {
+            for (text, v) in vectors {
+                _ = try db.run("INSERT OR REPLACE INTO catalog_vectors(text, vector) VALUES(?,?)",
+                               [text, v.withUnsafeBufferPointer { Data(buffer: $0) }])
+            }
+        }
     }
 
     // MARK: Tool runs

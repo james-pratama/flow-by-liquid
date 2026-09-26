@@ -86,7 +86,7 @@ final class Router {
         }
         var route = Route(intent: Self.kinds.first { $0.name == kind }?.intent ?? "action", kind: kind, calls: calls,
                           latencyMs: Int(Date().timeIntervalSince(t0) * 1000), corrections: [])
-        Self.correct(&route, transcript: transcript, focused: focus?.isTextInput ?? false)
+        Self.correct(&route, transcript: transcript, focused: focus?.isTextInput ?? false, app: focus?.appName ?? "")
         return route
     }
 
@@ -125,6 +125,14 @@ final class Router {
     static let memoryCue = #"\b(remember|note to self|make a note|take a note|note (that|this|down)|save (this|that|it)|keep in mind|don'?t forget|write (this|that|it) down|jot)\b"#
     /// Changing or removing something Flow remembers.
     private static let memoryEditCue = #"\b(update|change|correct|fix|edit|actually|forget|delete|remove|erase|no longer|now)\b"#
+    /// Controlling something inside an app, however the model filed it.
+    private static let mediaCue = #"^\s*(please\s+)?(play|pause|resume|unpause|skip|shuffle|next (song|track)|previous (song|track)|go back a song|turn (it|the music|the volume|spotify) (up|down)|(set the )?volume)\b"#
+    private static let askAppCue = #"\b(ask|tell|have) claude\b"#
+    private static let meetingCue = #"\b(meeting|call|transcrib\w*|record\w*|minutes)\b"#
+    /// A command verb, for "<verb> … in <app>".
+    private static let appCommandStart = #"^\s*(please\s+)?(check|close|open|search|google|go|play|reply|create|make|add|switch|reload|refresh|find|start|new|copy|hide|show|toggle|ask|tell|have|put|skip|pause|turn|pull up|bring up)\b"#
+    private static let replyToThisCue = #"^\s*(please\s+)?(reply|respond|answer)\b.*\b(this|that|the) (email|message|mail)\b"#
+    private static let notesAppCue = #"\b(in|to|into) (my )?(apple )?notes( app)?\b|\bnotes app\b"#
     private static let editCue = #"\b(move|change|reschedule|push|update|rename|cancel|delete|remove|clear|drop|scratch)\b"#
 
     /// A real request for information (vs. a remark or statement).
@@ -136,7 +144,7 @@ final class Router {
         return t.matches(smallTalkCue) || (words <= 4 && !t.matches(keepCue) && !looksLikeQuestion(t))
     }
 
-    static func correct(_ r: inout Route, transcript t: String, focused: Bool) {
+    static func correct(_ r: inout Route, transcript t: String, focused: Bool, app frontApp: String = "") {
         let explicitPaste = t.matches(pasteCue)
         let questionish = t.matches(questionStart) || t.matches(questionLike) || (!focused && isSmallTalk(t))
 
@@ -154,13 +162,16 @@ final class Router {
             case "answer_question": return !questionish && t.matches(memoryCue)
             case "update_reminder", "delete_reminder": return !t.matches(editCue)
             case "update_memory", "delete_memory": return !t.matches(memoryEditCue)
+            case "start_meeting", "stop_meeting": return !t.matches(meetingCue)
             default: return false
             }
         }
         if r.calls.count < before { r.corrections.append("dropped \(before - r.calls.count) unsupported call(s)") }
 
         if r.calls.isEmpty {
-            if t.matches(memoryCue) {
+            if let name = openTarget(t) {
+                r.calls = [RoutedCall(tool: "open_app", args: ["name": name])]
+            } else if t.matches(memoryCue) {
                 r.calls = [RoutedCall(tool: "memory_save", args: ["title": titleFrom(t), "content": t])]
             } else {
                 r.calls = [RoutedCall(tool: "answer_question", args: ["question": t, "use_memory": true,
@@ -174,6 +185,55 @@ final class Router {
             r.calls = [RoutedCall(tool: "answer_question", args: ["question": t, "use_memory": true,
                                                                   "use_files": t.matches(fileWords), "use_web": false])]
             r.corrections.append("action→question")
+        }
+        // "Play…", "pause", "skip this song": music control, not a question or just opening an app.
+        if ["answer_question", "open_app", "click_element", "memory_save"].contains(r.calls[0].tool), t.matches(mediaCue) {
+            r.calls = [RoutedCall(tool: "app_action", args: ["app": namedApp(t) ?? "", "request": t])]
+            r.corrections.append("→app_action (media)")
+        }
+        // "Ask Claude…" is for the Claude app, not a question for Flow.
+        if r.calls[0].tool == "answer_question", t.matches(askAppCue) {
+            r.calls = [RoutedCall(tool: "app_action", args: ["app": "Claude", "request": t])]
+            r.corrections.append("→app_action (Claude)")
+        }
+        // "Make a note in Notes…" goes to the Notes app, not Flow's memory.
+        if t.matches(notesAppCue), let i = r.calls.firstIndex(where: { $0.tool == "memory_save" }) {
+            r.calls[i] = RoutedCall(tool: "app_action", args: ["app": "Notes", "request": t])
+            r.corrections.append("memory→Notes app")
+        }
+        // "<verb> … in Notion/Chrome/Mail…": something to do inside that app.
+        let appQuestion = t.matches(#"\b(unread|new) (e-?mails?|mail|messages)\b|\bwhat'?s playing\b|\bwhat (song|track) is\b"#)
+        if let app = namedApp(t), ["answer_question", "open_app", "memory_save", "create_reminder", "draft_message", "write_text", "paste_text"].contains(r.calls[0].tool),
+           t.matches(appCommandStart) || (appQuestion && r.calls[0].tool == "answer_question"),
+           !t.matches(remindCue), !(["draft_message", "write_text"].contains(r.calls[0].tool) && t.matches(draftStart)),
+           !(r.calls[0].tool == "paste_text" && t.matches(pasteCue)) {
+            r.calls = [RoutedCall(tool: "app_action", args: ["app": app, "request": t])]
+            r.corrections.append("→app_action (\(app))")
+        }
+        // "Reply to this email saying…" while in Mail replies to the selected message.
+        if !focused, t.matches(replyToThisCue), frontApp == "Mail" || namedApp(t) == "Mail" {
+            r.calls = [RoutedCall(tool: "app_action", args: ["app": "Mail", "request": t])]
+            r.corrections.append("→Mail reply")
+        }
+        // An "app" that isn't one ("reach out to Marcus"): a message to draft, or an action in the app in front.
+        for i in r.calls.indices where r.calls[i].tool == "app_action" {
+            let app = r.calls[i].args["app"] as? String ?? ""
+            guard !app.isEmpty, AppCatalog.resolveApp(app) == nil else { continue }
+            if t.matches(draftCue) {
+                r.calls[i] = RoutedCall(tool: "draft_message", args: ["to": recipient(t).isEmpty ? app : recipient(t), "subject": "",
+                                                                      "body": "", "include_last_meeting": false])
+                r.corrections.append("app_action→draft (not an app)")
+            } else {
+                r.calls[i].args["app"] = ""
+            }
+        }
+        // App actions open their app themselves.
+        let actedIn = r.calls.filter { $0.tool == "app_action" }.compactMap { ($0.args["app"] as? String)?.lowercased() }.filter { !$0.isEmpty }
+        if !actedIn.isEmpty {
+            r.calls.removeAll { c in
+                guard c.tool == "open_app", let n = (c.args["name"] as? String)?.lowercased() else { return false }
+                return actedIn.contains { $0.contains(n) || n.contains($0) }
+            }
         }
         // Explicit reminder language the model filed as a plain memory.
         if r.calls[0].tool == "memory_save", t.matches(remindCue), !r.calls.contains(where: { $0.tool == "create_reminder" }) {
@@ -243,6 +303,21 @@ final class Router {
                         "update_reminder": "reminder", "delete_reminder": "reminder",
                         "update_memory": "memory", "delete_memory": "memory"][tool] ?? "action"
         }
+    }
+
+    /// "…on Spotify", "…in Chrome" → the curated app the user named, if any.
+    static func namedApp(_ t: String) -> String? {
+        CuratedApps.apps.first { app in
+            ([app.name] + app.aliases).contains { t.matches(#"\b(on|in|with|using)\s+"# + NSRegularExpression.escapedPattern(for: $0) + #"\b"#) }
+        }?.name
+    }
+
+    /// "Bring up Notion please" → "Notion"
+    static func openTarget(_ t: String) -> String? {
+        guard let re = try? NSRegularExpression(pattern: #"(?i)^\s*(?:please\s+)?(?:open|launch|bring up|pull up|fire up|switch to)\s+(?:the\s+)?([\w .&-]{2,40}?)(?:\s+app)?(?:\s+please)?[.!]?\s*$"#),
+              let m = re.firstMatch(in: t, range: NSRange(t.startIndex..., in: t)),
+              let r = Range(m.range(at: 1), in: t) else { return nil }
+        return String(t[r])
     }
 
     /// "update my memory about Marcus, his email…" → "Marcus"
