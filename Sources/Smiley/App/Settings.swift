@@ -1,0 +1,66 @@
+import Foundation
+import ServiceManagement
+
+final class Settings: ObservableObject {
+    static let shared = Settings()
+    private let d = UserDefaults.standard
+
+    @Published var shortcut: Shortcut {
+        didSet {
+            if let data = try? JSONEncoder().encode(shortcut) { d.set(data, forKey: "shortcut") }
+            HotkeyMonitor.shared.update(shortcut)
+        }
+    }
+    /// Wispr-style dictation: hold, speak, release → pasted where the cursor is. No agent.
+    @Published var dictationShortcut: Shortcut {
+        didSet {
+            if let data = try? JSONEncoder().encode(dictationShortcut) { d.set(data, forKey: "dictationShortcut") }
+            HotkeyMonitor.shared.update(dictationShortcut, for: .dictation)
+        }
+    }
+    @Published var showIdlePill: Bool { didSet { d.set(showIdlePill, forKey: "showIdlePill") } }
+    /// The desktop pet: click to talk, hover to type.
+    @Published var showPet: Bool { didSet { d.set(showPet, forKey: "showPet") } }
+    @Published var resultSeconds: Double { didSet { d.set(resultSeconds, forKey: "resultSeconds") } }
+    @Published var answerSeconds: Double { didSet { d.set(answerSeconds, forKey: "answerSeconds") } }
+    @Published var llamaServerPath: String { didSet { d.set(llamaServerPath, forKey: "llamaServerPath") } }
+    /// How Smiley addresses you and signs emails. Empty = the macOS account's first name.
+    @Published var userName: String { didSet { d.set(userName, forKey: "userName") } }
+    /// Names and unusual words, given to the speech model so it spells them the user's way.
+    @Published var dictionary: String { didSet { d.set(dictionary, forKey: "dictionary") } }
+    @Published var braveAPIKey: String { didSet { d.set(braveAPIKey, forKey: "braveAPIKey") } }
+    /// A Spotify developer app's credentials, so "play <song>" can find the exact track.
+    @Published var spotifyClientId: String { didSet { d.set(spotifyClientId, forKey: "spotifyClientId") } }
+    @Published var spotifyClientSecret: String { didSet { d.set(spotifyClientSecret, forKey: "spotifyClientSecret") } }
+    @Published var promptForMeetings: Bool { didSet { d.set(promptForMeetings, forKey: "promptForMeetings") } }
+    @Published var launchAtLogin: Bool {
+        didSet {
+            d.set(launchAtLogin, forKey: "launchAtLogin")
+            do {
+                if launchAtLogin { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
+            } catch { smileyLog("launch at login: \(error.localizedDescription)") }
+        }
+    }
+    var onboarded: Bool {
+        get { d.bool(forKey: "onboarded") }
+        set { d.set(newValue, forKey: "onboarded") }
+    }
+
+    private init() {
+        shortcut = d.data(forKey: "shortcut").flatMap { try? JSONDecoder().decode(Shortcut.self, from: $0) } ?? .default
+        dictationShortcut = d.data(forKey: "dictationShortcut").flatMap { try? JSONDecoder().decode(Shortcut.self, from: $0) }
+            ?? .defaultDictation
+        showIdlePill = d.object(forKey: "showIdlePill") as? Bool ?? true
+        showPet = d.object(forKey: "showPet") as? Bool ?? true
+        resultSeconds = d.object(forKey: "resultSeconds") as? Double ?? 5
+        answerSeconds = d.object(forKey: "answerSeconds") as? Double ?? 5
+        llamaServerPath = d.string(forKey: "llamaServerPath") ?? ""
+        braveAPIKey = d.string(forKey: "braveAPIKey") ?? ""
+        spotifyClientId = d.string(forKey: "spotifyClientId") ?? ""
+        spotifyClientSecret = d.string(forKey: "spotifyClientSecret") ?? ""
+        userName = d.string(forKey: "userName") ?? ""
+        dictionary = d.string(forKey: "dictionary") ?? ""
+        promptForMeetings = d.object(forKey: "promptForMeetings") as? Bool ?? true
+        launchAtLogin = d.object(forKey: "launchAtLogin") as? Bool ?? false
+    }
+}

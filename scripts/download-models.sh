@@ -1,11 +1,13 @@
 #!/bin/bash
-# Downloads the LFM2.5 GGUF models Flow runs locally (~3.6 GB) into ~/Library/Application Support/Flow/models.
+# Downloads the GGUF models Smiley runs locally (~12 GB) into ~/Library/Application Support/Smiley/models.
+# Re-running resumes partial downloads.
 set -euo pipefail
-M="$HOME/Library/Application Support/Flow/models"
+M="$HOME/Library/Application Support/Smiley/models"
 mkdir -p "$M"
 dl() { echo "↓ $2"; curl -L --fail -C - -o "$M/$2" "https://huggingface.co/$1/resolve/main/$2"; }
-dl LiquidAI/LFM2.5-2.6B-GGUF LFM2.5-2.6B-Q4_K_M.gguf
-dl LiquidAI/LFM2.5-Audio-1.5B-GGUF LFM2.5-Audio-1.5B-Q8_0.gguf
-dl LiquidAI/LFM2.5-Audio-1.5B-GGUF mmproj-LFM2.5-Audio-1.5B-Q8_0.gguf
-dl LiquidAI/LFM2.5-Embedding-350M-GGUF LFM2.5-Embedding-350M-Q8_0.gguf
+dl unsloth/Qwen3.5-4B-GGUF Qwen3.5-4B-Q4_K_M.gguf                      # understands commands (fast)
+dl Qwen/Qwen3-Embedding-0.6B-GGUF Qwen3-Embedding-0.6B-Q8_0.gguf        # memory search
+dl ggml-org/Qwen3-ASR-1.7B-GGUF Qwen3-ASR-1.7B-Q8_0.gguf                # speech
+dl ggml-org/Qwen3-ASR-1.7B-GGUF mmproj-Qwen3-ASR-1.7B-Q8_0.gguf
+dl unsloth/Qwen3.5-9B-GGUF Qwen3.5-9B-Q4_K_M.gguf                      # answers and writing
 echo "Models ready in $M"

@@ -40,7 +40,7 @@
 {"text": "Open Slack and paste in, I'm running five minutes late.", "intent": "action", "tool": "open_app", "tool2": "paste_text"}
 {"text": "What time is my call with Jenna?", "focused": true, "intent": "question", "tool": "answer_question"}
 {"text": "Remember that I prefer window seats.", "focused": true, "intent": "memory", "tool": "memory_save"}
-{"text": "Hey Flow, how are you?", "intent": "question", "tool": "answer_question"}
+{"text": "Hey Smiley, how are you?", "intent": "question", "tool": "answer_question"}
 {"text": "Hi there.", "intent": "question", "tool": "answer_question"}
 {"text": "Thanks, that's perfect.", "intent": "question", "tool": "answer_question"}
 {"text": "Good morning!", "intent": "question", "tool": "answer_question"}

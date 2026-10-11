@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "Flow",
+    name: "Smiley",
     platforms: [.macOS(.v14)],
     targets: [
         .executableTarget(
-            name: "Flow",
-            path: "Sources/Flow",
+            name: "Smiley",
+            path: "Sources/Smiley",
             linkerSettings: [.linkedLibrary("sqlite3")]
         )
     ]
